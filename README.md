@@ -1,5 +1,7 @@
 # rbenv-clean
-`rbenv-clean` is a plugin for rbenv that aids in removing gems from your ruby environment.
+`rbenv-clean` is a plugin for rbenv that aids in removing gems from your ruby environment. 
+
+A "fork" of @jbernsie's work after he mysteriously disappeared from this plane.
 
 ## Installation
 
