@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+#
+# Summary: Uninstall all non-default gems,
+#          then install bundler for every installed ruby version
+#
+# Usage: rbenv clean
+
+set -e
+
+# Uninstalls gem from current ruby set by `rbenv local`  
+uninstall() {
+  list=(`ruby -e 'puts Gem::Specification.reject(&:default_gem?).map(&:name).join("\n")'`)
+  for gem in ${list[*]}; do
+      if [[ $gem != 'bundler' ]]; then
+          gem uninstall $gem -aIx || true
+      fi
+  done
+}
+
+# Runs uninstall() for all installed versions of ruby
+all_versions() {
+  RBENVPATH=`rbenv root`
+  echo $RBENVPATH
+  RUBIES=`ls $RBENVPATH/versions`
+  for ruby in $RUBIES; do
+      echo '---------------------------------------'
+      echo $ruby
+      echo '---------------------------------------'
+      rbenv local $ruby
+      uninstall
+      gem list
+      rm -f .ruby-version
+  done
+  rm -f .ruby-version
+}
+
+# Runs uninstall() for specified version of ruby
+one_version() {
+  RBENVPATH=`rbenv root`
+  echo "$RBENVPATH"
+  echo '---------------------------------------'
+  echo "$@"
+  echo '---------------------------------------'
+  rbenv local $@
+  uninstall
+  gem list
+  rm -f .ruby-version
+}
+
+show_help() {
+  echo "Rbenv Clean"
+  echo ""
+  echo "Options:"
+  echo "  -h          Show help"
+  echo "  -v=VERSION  Uninstall from only one version"
+  echo "  -c          Uninstall from only current global version"
+  echo "  -a          Uninstall from all installed versions"
+}
+
+while getopts "h?:v:c?:a?:" opt; do
+    case "$opt" in
+    h)
+        show_help
+        exit 0
+        ;;
+    v)
+        one_version $2
+        exit 0
+        ;;
+    c)
+        one_version $(rbenv global)
+        exit 0
+        ;;
+    a)
+        all_versions
+        exit 0
+        ;;
+    esac
+done
+
+show_help
+exit 0
